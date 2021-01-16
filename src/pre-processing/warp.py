@@ -168,6 +168,6 @@ class Warp:
 
 
 warp = Warp()
-video_file_path = os.path.abspath(os.path.join(paths.data_folder_path, 'raw', 's.mp4'))
+video_file_path = os.path.abspath(os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4'))
 frame_size = (720, 720)
 warped_video = warp.perspective(video_file_path, frame_size)

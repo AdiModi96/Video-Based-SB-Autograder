@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from models import ResNet50_FasterRCNN
+from detector_models import ResNet50_FasterRCNN
 from src import paths
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -35,9 +35,9 @@ class Detector:
             self.device = 'cpu'
 
         self.chunk_size = 50
-        self.score_threshold = 0.95
+        self.probability_threshold = 0.95
 
-        self.output_folder_path = os.path.join(paths.data_folder_path, 'objects detected')
+        self.output_folder_path = os.path.join(paths.data_folder_path, 'detected objects')
         if not os.path.isdir(self.output_folder_path):
             os.makedirs(self.output_folder_path)
 
@@ -66,7 +66,7 @@ class Detector:
                 torch.unsqueeze(
                     torch.as_tensor(np.transpose(frame, [2, 0, 1]), dtype=torch.float32),
                     dim=0
-                ).to(device)
+                ).to(self.device)
             )[0]
 
             predicted_annotations['labels'] = predicted_annotations['labels'].to('cpu').detach().numpy()
@@ -80,12 +80,12 @@ class Detector:
 
             frame_annotations = []
             for i in range(len(predicted_annotations['scores'])):
-                if predicted_annotations['scores'][i] > self.score_threshold:
+                if predicted_annotations['scores'][i] > self.probability_threshold:
                     frame_annotations.append(
                         {
                             'label': int(predicted_annotations['labels'][i]),
                             'bbox': predicted_annotations['boxes'][i].tolist(),
-                            'point': (
+                            'coordinates': (
                                 float((predicted_annotations['boxes'][i][0] + predicted_annotations['boxes'][i][2]) / 2),
                                 float((predicted_annotations['boxes'][i][1] + predicted_annotations['boxes'][i][3]) / 2)
                             ),
