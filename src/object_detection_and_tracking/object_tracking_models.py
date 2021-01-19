@@ -68,3 +68,14 @@ class CentroidTracker:
             elif len(new_unmatched_idxes) > 0:
                 for new_unmatched_idx in new_unmatched_idxes:
                     self.register(new_coordinates[new_unmatched_idx])
+
+    def get_objects_dictionary(self):
+        objects = []
+        for tracker_id in self.object_coordinates.keys():
+            objects.append(
+                {
+                    'tracker_id': tracker_id,
+                    'coordinates': self.object_coordinates[tracker_id]
+                }
+            )
+        return objects
