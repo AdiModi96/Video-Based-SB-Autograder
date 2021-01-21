@@ -8,9 +8,9 @@ from tqdm import tqdm
 from src import paths
 
 
-class Warp:
+class PerspectiveWarper:
     def __init__(self):
-        self.output_folder_path = os.path.join(paths.data_folder_path, 'pre-processed', 'warped')
+        self.output_folder_path = os.path.join(paths.data_folder_path, 'preprocessed', 'warped')
         if not os.path.isdir(self.output_folder_path):
             os.makedirs(self.output_folder_path)
 
@@ -28,7 +28,7 @@ class Warp:
 
         return anchor_points
 
-    def perspective(self, video_file_path, frame_size):
+    def warp_shallow(self, video_file_path, frame_size):
 
         if not os.path.exists(video_file_path):
             print('Quitting: Video path does not exits')
@@ -97,7 +97,7 @@ class Warp:
         video_writer.release()
         progress_bar.close()
 
-    def perspective_deep(self, video_file_path, frame_size):
+    def warp_deep(self, video_file_path, frame_size):
 
         if not os.path.exists(video_file_path):
             print('Quitting: Video path does not exits')
@@ -167,7 +167,7 @@ class Warp:
         video_writer.release()
 
 
-warp = Warp()
+warp = PerspectiveWarper()
 video_file_path = os.path.abspath(os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4'))
 frame_size = (720, 720)
-warped_video = warp.perspective(video_file_path, frame_size)
+warped_video = warp.warp_shallow(video_file_path, frame_size)
