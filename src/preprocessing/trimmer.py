@@ -16,7 +16,7 @@ class Trimmer:
             os.makedirs(self.output_folder_path)
 
     def is_frame_black(self, frame):
-        result = np.mean(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)) < self.threshold
+        result = np.mean(frame) < self.threshold
         return result
 
     def trim(self, video_file_path):
@@ -33,16 +33,18 @@ class Trimmer:
         anchor_frame_idxes = []
         previous_frame_black = False
 
+        print('Finding separators (black frame) ...')
         progress_bar = tqdm(total=num_frames, unit=' frames')
-        for frame_idx in range(1, num_frames):
-            _, frame = video.read()
+        for frame_idx in range(num_frames):
+            read, frame = video.read()
 
-            if self.is_frame_black(frame):
-                if not previous_frame_black:
-                    anchor_frame_idxes.append(frame_idx)
-                previous_frame_black = True
-            else:
-                previous_frame_black = False
+            if read:
+                if self.is_frame_black(frame):
+                    if not previous_frame_black:
+                        anchor_frame_idxes.append(frame_idx)
+                    previous_frame_black = True
+                else:
+                    previous_frame_black = False
 
             progress_bar.update(1)
         progress_bar.close()
@@ -67,11 +69,15 @@ class Trimmer:
             frame_size
         )
         video.set(cv2.CAP_PROP_POS_FRAMES, start_frame_idx)
-        progress_bar = tqdm(total=end_frame_idx - start_frame_idx)
+        print('Trimming ...')
+        progress_bar = tqdm(total=end_frame_idx - start_frame_idx, unit=' frames')
         for frame_idx in range(start_frame_idx, end_frame_idx):
-            _, frame = video.read()
-            if not self.is_frame_black(frame):
-                video_writer.write(frame)
+            read, frame = video.read()
+
+            if read:
+                _, frame = video.read()
+                if not self.is_frame_black(frame):
+                    video_writer.write(frame)
 
             progress_bar.update(1)
         progress_bar.close()
@@ -79,8 +85,12 @@ class Trimmer:
 
 
 separator = Trimmer()
-video_file_path = os.path.join(
+video_folder_path = os.path.join(
     paths.data_folder_path,
-    'raw'
+    'test'
 )
-separator.trim(video_file_path)
+video_file_paths = [os.path.join(video_folder_path, video_file_name) for video_file_name in os.listdir(video_folder_path)]
+for video_file_path in video_file_paths:
+    print('Processing: ', os.path.basename(video_file_path))
+    separator.trim(video_file_path)
+    print()
