@@ -170,4 +170,4 @@ class PerspectiveWarper:
 warp = PerspectiveWarper()
 video_file_path = os.path.abspath(os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4'))
 frame_size = (720, 720)
-warped_video = warp.warp_shallow(video_file_path, frame_size)
+warp.warp_shallow(video_file_path, frame_size)
