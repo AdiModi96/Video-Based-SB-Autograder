@@ -15,13 +15,16 @@ class Detector:
             os.makedirs(self.output_folder_path)
 
     def detect_motion(self, annotations_file_path):
+        # Checking if annotations file exist
         if not os.path.exists(annotations_file_path):
             print('Quitting: Annotations file path does not exist')
-            return
+            return False
 
+        # Reading annotations
         with open(annotations_file_path) as file:
             annotations = json.load(file)
 
+        # Extracting coordinates for each coin to build individual event's detector for each object instance
         coin_coordinates = defaultdict(lambda: [])
         coin_events = defaultdict(lambda: [])
         chronological_events = []
@@ -50,15 +53,16 @@ class Detector:
                     }
                 )
 
+        # Sorting events according to frame index
         chronological_events.sort(key=lambda event: event['frame_idx'])
+
+        # Writing detected events
         with open(os.path.join(self.output_folder_path, events_file_name), 'w') as file:
             json.dump(chronological_events, file, default=bool, indent=4)
 
+        return True
 
-detector = Detector()
-annotations_file_path = os.path.join(
-    paths.data_folder_path,
-    'detected_and_tracked_objects',
-    '77_bonus.json'
-)
-detector.detect_motion(annotations_file_path)
+# Driver Code
+# detector = Detector()
+# annotations_file_path = os.path.join(paths.data_folder_path, 'detected_and_tracked_objects', '77_bonus.json')
+# detector.detect_motion(annotations_file_path)

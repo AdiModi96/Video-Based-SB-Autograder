@@ -32,7 +32,7 @@ class PerspectiveWarper:
 
         if not os.path.exists(video_file_path):
             print('Quitting: Video path does not exits')
-            return
+            return False
 
         video = cv2.VideoCapture(video_file_path)
         num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -73,9 +73,7 @@ class PerspectiveWarper:
 
         if not anchor_points_found:
             print('Quitting: Anchor points not found')
-            return
-
-        print('Anchor points found')
+            return False
 
         video_file_name = os.path.basename(video_file_path)
 
@@ -97,11 +95,13 @@ class PerspectiveWarper:
         video_writer.release()
         progress_bar.close()
 
+        return True
+
     def warp_deep(self, video_file_path, frame_size):
 
         if not os.path.exists(video_file_path):
             print('Quitting: Video path does not exits')
-            return
+            return False
 
         video = cv2.VideoCapture(video_file_path)
         num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -144,13 +144,15 @@ class PerspectiveWarper:
         progress_bar.close()
         video_writer.release()
 
+        return True
 
-warp = PerspectiveWarper()
-videos_folder_path = os.path.join(paths.experiments_folder_path, 'registration', 'videos', 'raw')
-video_file_paths = [
-    os.path.join(videos_folder_path, video_file_name) for video_file_name in os.listdir(videos_folder_path)
-]
-frame_size = (1080, 1080)
-for video_file_path in video_file_paths:
-    warp.warp_deep(video_file_path, frame_size)
-    print()
+# Driver Code
+# warp = PerspectiveWarper()
+# videos_folder_path = os.path.join(paths.experiments_folder_path, 'registration', 'videos', 'raw')
+# video_file_paths = [
+#     os.path.join(videos_folder_path, video_file_name) for video_file_name in os.listdir(videos_folder_path)
+# ]
+# frame_size = (1080, 1080)
+# for video_file_path in video_file_paths:
+#     warp.warp_deep(video_file_path, frame_size)
+#     print()

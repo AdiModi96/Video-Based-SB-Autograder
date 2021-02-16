@@ -1,9 +1,12 @@
 import json
+import os
 from collections import defaultdict
 
 import cv2
 import numpy as np
 from tqdm import tqdm
+
+import paths
 
 
 class AveragedCircleTransforms:
@@ -36,6 +39,10 @@ class AveragedCircleTransforms:
         }
         self.num_frames_to_skip_for_observations = 10
 
+        self.output_folder_path = os.path.join(paths.data_folder_path, 'region_masks')
+        if not os.path.isdir(self.output_folder_path):
+            os.makedirs(self.output_folder_path)
+
     def _process_frame(self, frame):
         processed_frame = frame.copy()
         processed_frame = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
@@ -48,6 +55,17 @@ class AveragedCircleTransforms:
         return processed_frame
 
     def generate_region_masks(self, video_file_path, annotations_file_path):
+
+        # Checking if video file path exist
+        if not os.path.exists(video_file_path):
+            print('Quitting: Video file path does not exist')
+            return
+
+        # Checking if annotations file path exist
+        if not os.path.exists(annotations_file_path):
+            print('Quitting: Annotations file path does not exist')
+            return
+
         video = cv2.VideoCapture(video_file_path)
         fps = video.get(cv2.CAP_PROP_FPS)
         num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -173,6 +191,12 @@ class AveragedCircleTransforms:
             ] = 255
         region_masks['blue'] = cv2.bitwise_and(region_masks['blue'], cv2.bitwise_not(cumulative_mask))
         cumulative_mask = cv2.bitwise_or(cumulative_mask, region_masks['blue'])
-        print('Masks generated ...')
 
-        return region_masks
+        # Writing generated masks
+        region_masks_folder_path = os.path.join(self.output_folder_path, os.path.splitext(os.path.basename(video_file_path))[0])
+        if not os.path.isdir(region_masks_folder_path):
+            os.makedirs(region_masks_folder_path)
+        for region_key in region_masks.keys():
+            cv2.imwrite(os.path.join(region_masks_folder_path, '{}.png'.format(region_key)), region_masks[region_key])
+
+        return True

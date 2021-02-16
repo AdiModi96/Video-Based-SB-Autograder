@@ -12,8 +12,8 @@ COLORS = {
     4: (0, 255, 0)
 }
 
-annotations_file_path = os.path.join(paths.data_folder_path, 'detected_and_tracked_objects', '77_bonus.json')
 video_file_path = os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4')
+annotations_file_path = os.path.join(paths.data_folder_path, 'detected_and_tracked_objects', '77_bonus.json')
 
 with open(annotations_file_path) as file:
     annotations = json.load(file)

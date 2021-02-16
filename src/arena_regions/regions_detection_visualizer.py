@@ -45,10 +45,10 @@ for region_key in region_masks.keys():
     #     cv2.destroyWindow(region_key)
 
 # Visualization of collective overlay layer
-cv2.imshow('Cumulative Region Boundaies', cumulative_region_boundaries)
+cv2.imshow('Cumulative Region Boundaries', cumulative_region_boundaries)
 key = cv2.waitKey(0)
 if key == 27:
-    cv2.destroyWindow('Cumulative Region Boundaies')
+    cv2.destroyAllWindows()
 
 alpha = 0.25
 playback_speed = 1.5

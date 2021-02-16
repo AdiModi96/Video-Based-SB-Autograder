@@ -22,8 +22,8 @@ STATE = {
     False: 'stationary'
 }
 
-events_file_path = os.path.join(paths.data_folder_path, 'detected_events', '77_bonus.json')
 video_file_path = os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4')
+events_file_path = os.path.join(paths.data_folder_path, 'detected_events', '77_bonus.json')
 
 with open(events_file_path) as file:
     events = deque(json.load(file))

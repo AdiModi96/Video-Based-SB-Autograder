@@ -9,12 +9,15 @@ from src import paths
 
 
 class PerspectiveWarper:
+
     def __init__(self):
+        # Checking and creating output folder
         self.output_folder_path = os.path.join(paths.data_folder_path, 'preprocessed', 'warped')
         if not os.path.isdir(self.output_folder_path):
             os.makedirs(self.output_folder_path)
 
-    def find_anchor_points(self, image):
+    def __find_anchor_points(self, image):
+        # Finding centers of aruco markers
         aruco_dict = aruco.Dictionary_get(aruco.DICT_7X7_1000)
         aruco_params = aruco.DetectorParameters_create()
         corners, ids, rejected = aruco.detectMarkers(image, aruco_dict, parameters=aruco_params)
@@ -23,16 +26,17 @@ class PerspectiveWarper:
             center = np.mean(corner, axis=1)[0]
             anchor_points.append([center[0], center[1]])
 
+        # Sorting aruco markers according to their ids
         if len(anchor_points) == 4:
             _, anchor_points = zip(*sorted(zip(ids, anchor_points), key=lambda element: element[0]))
 
         return anchor_points
 
     def warp_shallow(self, video_file_path, frame_size):
-
+        # Checking if video file path exist
         if not os.path.exists(video_file_path):
             print('Quitting: Video path does not exits')
-            return
+            return False
 
         video = cv2.VideoCapture(video_file_path)
         num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -41,12 +45,13 @@ class PerspectiveWarper:
         anchor_points_found = False
         warping_matrix = None
 
+        # Searching frame(s) for anchor points
         print('Searching frame with anchor points ...')
         progress_bar = tqdm(total=num_frames, unit=' frames')
         for frame_idx in range(num_frames):
             _, frame = video.read()
 
-            anchor_points = np.array(self.find_anchor_points(frame), dtype=np.float32)
+            anchor_points = np.array(self.__find_anchor_points(frame), dtype=np.float32)
             if len(anchor_points) == 4:
                 anchor_points_found = True
 
@@ -60,6 +65,7 @@ class PerspectiveWarper:
                     dtype=np.float32
                 )
 
+                # Building warping matrix
                 warping_matrix = cv2.getPerspectiveTransform(
                     anchor_points,
                     warped_anchor_points
@@ -71,12 +77,12 @@ class PerspectiveWarper:
         progress_bar.close()
         video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
+        # Checking if anchor points found
         if not anchor_points_found:
             print('Quitting: Anchor points not found')
-            return
+            return False
 
-        print('Anchor points found')
-
+        # Writing warped video
         video_file_name = os.path.basename(video_file_path)
 
         video_writer = cv2.VideoWriter(
@@ -90,6 +96,7 @@ class PerspectiveWarper:
         for frame_idx in range(num_frames):
             _, frame = video.read()
 
+            # Applying warping to frames
             frame = cv2.warpPerspective(frame, warping_matrix, dsize=frame_size)
             video_writer.write(frame)
             progress_bar.update(1)
@@ -97,8 +104,10 @@ class PerspectiveWarper:
         video_writer.release()
         progress_bar.close()
 
-    def warp_deep(self, video_file_path, frame_size):
+        return True
 
+    def warp_deep(self, video_file_path, frame_size):
+        # Checking if video file path exist
         if not os.path.exists(video_file_path):
             print('Quitting: Video path does not exits')
             return
@@ -107,6 +116,7 @@ class PerspectiveWarper:
         num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = video.get(cv2.CAP_PROP_FPS)
 
+        # Searching frame(s) for anchor points
         video_anchor_points = np.ndarray(shape=(num_frames, 4, 2), dtype=np.float32)
         anchor_points_found = True
 
@@ -115,7 +125,7 @@ class PerspectiveWarper:
         for frame_idx in range(num_frames):
             _, frame = video.read()
 
-            anchor_points = np.array(self.find_anchor_points(frame), dtype=np.float32)
+            anchor_points = np.array(self.__find_anchor_points(frame), dtype=np.float32)
             if len(anchor_points) == 4:
                 video_anchor_points[frame_idx] = np.asarray(anchor_points)
             else:
@@ -125,12 +135,12 @@ class PerspectiveWarper:
         progress_bar.close()
         video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
+        # Checking if anchor points found for each frame
         if not anchor_points_found:
             print('Quitting: Anchor points not found')
-            return
+            return False
 
-        print('Anchor points found')
-
+        # Writing warped video
         video_file_name = os.path.basename(video_file_path)
 
         video_writer = cv2.VideoWriter(
@@ -154,6 +164,7 @@ class PerspectiveWarper:
                 dtype=np.float32
             )
 
+            # Building warping matrix and applying warping to each frame
             warping_matrix = cv2.getPerspectiveTransform(
                 video_anchor_points[frame_idx],
                 warped_anchor_points
@@ -165,9 +176,4 @@ class PerspectiveWarper:
 
         progress_bar.close()
         video_writer.release()
-
-
-warp = PerspectiveWarper()
-video_file_path = os.path.abspath(os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4'))
-frame_size = (720, 720)
-warp.warp_shallow(video_file_path, frame_size)
+        return True

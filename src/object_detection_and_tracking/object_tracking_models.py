@@ -6,35 +6,40 @@ from scipy.spatial import distance as dist
 
 class CentroidTracker:
     def __init__(self, num_frames_to_deregister=60):
+        # Constructing variables required by algorithm
         self.next_tracker_id = 1
         self.object_coordinates = OrderedDict()
         self.num_frames_to_deregister = num_frames_to_deregister
-        self.num_frames_disappeared = defaultdict(lambda: 0)
+        self.num_consecutive_frames_disappeared = defaultdict(lambda: 0)
 
     def register(self, coordinates):
+        # Assigning a new tracker id to object instance and it to the registry
         self.object_coordinates[self.next_tracker_id] = tuple(coordinates)
-        self.num_frames_disappeared[self.next_tracker_id] = 0
+        self.num_consecutive_frames_disappeared[self.next_tracker_id] = 0
         self.next_tracker_id += 1
 
     def deregister(self, tracker_id):
+        # Deleting the object instacnce's tracker id from registry
         del self.object_coordinates[tracker_id]
-        del self.num_frames_disappeared[tracker_id]
+        del self.num_consecutive_frames_disappeared[tracker_id]
 
     def update(self, new_coordinates):
 
+        # Updating object's location with new set of coordinates
         current_coordinates = np.array([self.object_coordinates[tracker_id] for tracker_id in self.object_coordinates.keys()])
         new_coordinates = np.array(new_coordinates)
 
+        # If there are no new coordinates, we add one to consecutive frame disappeared for all object instances
         if len(new_coordinates) == 0:
             for tracker_id_to_deregister in self.object_coordinates.keys():
-                self.num_frames_disappeared[tracker_id_to_deregister] += 1
-                if self.num_frames_disappeared[tracker_id_to_deregister] > self.num_frames_to_deregister:
+                self.num_consecutive_frames_disappeared[tracker_id_to_deregister] += 1
+                if self.num_consecutive_frames_disappeared[tracker_id_to_deregister] > self.num_frames_to_deregister:
                     self.deregister(tracker_id_to_deregister)
-
+        # If we have no prior coordinates, we register all coordinates as new object instances
         elif len(current_coordinates) == 0:
             for coordinates in new_coordinates:
                 self.register(coordinates)
-
+        # We iteratively update coordinates of object instances based on shortest instances
         else:
             tracker_ids = list(self.object_coordinates.keys())
 
@@ -48,7 +53,7 @@ class CentroidTracker:
                 current_matched_idx, new_matched_idx = min_idx // len(new_coordinates), min_idx % len(new_coordinates)
 
                 self.object_coordinates[tracker_ids[current_matched_idx]] = tuple(new_coordinates[new_matched_idx])
-                self.num_frames_disappeared[tracker_ids[current_matched_idx]] = 0
+                self.num_consecutive_frames_disappeared[tracker_ids[current_matched_idx]] = 0
                 current_unmatched_idxes.remove(current_matched_idx)
                 new_unmatched_idxes.remove(new_matched_idx)
 
@@ -58,8 +63,8 @@ class CentroidTracker:
             if len(current_unmatched_idxes) > 0:
                 tracker_ids_to_deregister = []
                 for current_unmatched_idx in current_unmatched_idxes:
-                    self.num_frames_disappeared[tracker_ids[current_unmatched_idx]] += 1
-                    if self.num_frames_disappeared[tracker_ids[current_unmatched_idx]] > self.num_frames_to_deregister:
+                    self.num_consecutive_frames_disappeared[tracker_ids[current_unmatched_idx]] += 1
+                    if self.num_consecutive_frames_disappeared[tracker_ids[current_unmatched_idx]] > self.num_frames_to_deregister:
                         tracker_ids_to_deregister.append(tracker_ids[current_unmatched_idx])
 
                 for tracker_id_to_deregister in tracker_ids_to_deregister:
