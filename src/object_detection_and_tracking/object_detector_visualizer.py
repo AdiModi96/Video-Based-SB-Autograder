@@ -5,7 +5,7 @@ import cv2
 
 import paths
 
-COLORS = {
+LABEL_COLORS = {
     1: (255, 255, 255),
     2: (0, 255, 255),
     3: (0, 0, 255),
@@ -21,6 +21,7 @@ with open(annotations_file_path) as file:
 video = cv2.VideoCapture(video_file_path)
 num_frames = len(annotations)
 fps = video.get(cv2.CAP_PROP_FPS)
+playback_speed = 3.0
 
 for frame_idx in range(num_frames):
     _, frame = video.read()
@@ -35,7 +36,7 @@ for frame_idx in range(num_frames):
             frame = cv2.circle(
                 frame,
                 center=(int(coordinates[0]), int(coordinates[1])),
-                color=COLORS[label],
+                color=LABEL_COLORS[label],
                 radius=7,
                 thickness=2,
             )
@@ -44,9 +45,9 @@ for frame_idx in range(num_frames):
                 frame,
                 text='{}'.format(label),
                 org=(int(coordinates[0]), int(coordinates[1]) - 2),
-                fontFace=cv2.FONT_HERSHEY_DUPLEX,
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=0.75,
-                color=COLORS[object['label']],
+                color=LABEL_COLORS[object['label']],
                 thickness=1
             )
 
@@ -59,7 +60,7 @@ for frame_idx in range(num_frames):
                 frame = cv2.circle(
                     frame,
                     center=(int(coordinates[0]), int(coordinates[1])),
-                    color=COLORS[object['label']],
+                    color=LABEL_COLORS[object['label']],
                     radius=7,
                     thickness=2,
                 )
@@ -68,13 +69,13 @@ for frame_idx in range(num_frames):
                     frame,
                     text='{}/{}'.format(label, instance_id),
                     org=(int(coordinates[0]), int(coordinates[1]) - 2),
-                    fontFace=cv2.FONT_HERSHEY_DUPLEX,
+                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=0.75,
-                    color=COLORS[object['label']],
+                    color=LABEL_COLORS[object['label']],
                     thickness=1
                 )
 
-    cv2.imshow('Object Detection and Tracking for Video: 77_bonus', frame)
-    key = cv2.waitKey(1000 // int(fps))
+    cv2.imshow('Object Detection & Tracking for Video: 77_bonus', frame)
+    key = cv2.waitKey(int(1000 / (playback_speed * fps)))
     if key == 27:
         break

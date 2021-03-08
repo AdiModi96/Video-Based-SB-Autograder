@@ -64,7 +64,7 @@ for frame_idx in range(num_frames):
         frame = cv2.addWeighted(frame, alpha, cumulative_region_boundaries, 1 - alpha, 5)
 
         cv2.imshow(video_file_name, frame)
-        key = cv2.waitKey(int(playback_speed * 1000 / fps))
+        key = cv2.waitKey(int(1000 / (playback_speed * fps)))
         if key == 27:
             break
 

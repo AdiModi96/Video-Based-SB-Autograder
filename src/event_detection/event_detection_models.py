@@ -11,7 +11,7 @@ class DistanceThreshold:
         self.stationary_distance_threshold = stationary_distance_threshold
         self.moving = False
 
-    def euclidean_distance(self, point_1, point_2):
+    def __euclidean_distance(self, point_1, point_2):
         # Calculating euclidean distance between two points
         return ((point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2) ** 0.5
 
@@ -27,11 +27,11 @@ class DistanceThreshold:
         while frame_idx < num_frames:
             reference_frame_idx = min(num_frames - 1, frame_idx + self.reference_step)
             if not self.moving:
-                if self.euclidean_distance(coordinates[frame_idx], coordinates[reference_frame_idx]) > self.motion_distance_threshold:
+                if self.__euclidean_distance(coordinates[frame_idx], coordinates[reference_frame_idx]) > self.motion_distance_threshold:
                     events.append((frame_idx, True, coordinates[frame_idx].tolist()))
                     self.moving = True
             else:
-                if self.euclidean_distance(coordinates[reference_frame_idx], coordinates[frame_idx]) <= self.stationary_distance_threshold:
+                if self.__euclidean_distance(coordinates[reference_frame_idx], coordinates[frame_idx]) <= self.stationary_distance_threshold:
                     events.append((frame_idx, False, coordinates[frame_idx].tolist()))
                     self.moving = False
                     frame_idx = reference_frame_idx

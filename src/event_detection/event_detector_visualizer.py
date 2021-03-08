@@ -8,18 +8,27 @@ import cv2
 import paths
 
 LABEL_COLORS = {
+    1: (255, 255, 255),
+    2: (0, 255, 255),
     3: (0, 0, 255),
     4: (0, 255, 0)
 }
 
 LABEL_NAME = {
-    3: 'Red',
-    4: 'Green'
+    1: 'arena_center',
+    2: 'robot',
+    3: 'red',
+    4: 'green'
 }
 
 STATE = {
     True: 'moving',
     False: 'stationary'
+}
+
+STATE_COLORS = {
+    True: (0, 255, 0),
+    False: (0, 0, 255)
 }
 
 video_file_path = os.path.join(paths.data_folder_path, 'raw', '77_bonus.mp4')
@@ -51,7 +60,7 @@ for frame_idx in range(300, num_frames):
         )
 
         points[(label, tracker_id)].append(events[0]['coordinates'])
-        color = LABEL_COLORS[events[0]['label']]
+        color = STATE_COLORS[moving]
         events.popleft()
 
     notification_panel = frame.copy()
